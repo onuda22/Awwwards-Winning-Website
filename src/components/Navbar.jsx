@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { TiLocationArrow } from 'react-icons/ti';
+import { useWindowScroll } from 'react-use';
 import Button from './Button';
+import gsap from 'gsap';
 
 const navItems = ['Nexus', 'Vault', 'Prologue', 'About', 'Contact'];
 
@@ -8,8 +10,42 @@ const Navbar = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isIndicatorActive, setIsIndicatorActive] = useState(false);
 
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [isNavVisible, setIsNavVisible] = useState(true);
+
   const navContainerRef = useRef(null);
   const audioElementRef = useRef(null);
+
+  const { y: currentScrollY } = useWindowScroll();
+
+  /**
+   * Implement the sticky navigation effect with black background
+   */
+  useEffect(() => {
+    if (currentScrollY === 0) {
+      setIsNavVisible(true);
+      navContainerRef.current.classList.remove('floating-nav');
+    } else if (currentScrollY > lastScrollY) {
+      setIsNavVisible(false);
+      navContainerRef.current.classList.add('floating-nav');
+    } else if (currentScrollY < lastScrollY) {
+      setIsNavVisible(true);
+      navContainerRef.current.classList.add('floating-nav');
+    }
+
+    setLastScrollY(currentScrollY);
+  }, [currentScrollY, lastScrollY]);
+
+  /**
+   * Apply animation with Gsap whenever navbar visibility changes
+   */
+  useEffect(() => {
+    gsap.to(navContainerRef.current, {
+      y: isNavVisible ? 0 : -100,
+      opacity: isNavVisible ? 1 : 0,
+      duration: 0.2,
+    });
+  }, [isNavVisible]);
 
   const toggleAudioIndicator = () => {
     setIsAudioPlaying((prev) => !prev);
@@ -64,7 +100,7 @@ const Navbar = () => {
                 className="hidden"
                 loop
               />
-              {[1, 2, 3, 4].map((bar) => (
+              {[1, 2, 3, 4, 5, 6].map((bar) => (
                 <div
                   key={bar}
                   className={`indicator-line ${
