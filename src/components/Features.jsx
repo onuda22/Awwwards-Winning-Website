@@ -1,7 +1,43 @@
+import { useRef, useState } from 'react';
 import { TiLocationArrow } from 'react-icons/ti';
 
-const BentoTilt = ({ chidlren, className = '' }) => {
-  return <div>{chidlren}</div>;
+const BentoTilt = ({ children, className = '' }) => {
+  const [transformStyle, setTransformStyle] = useState('');
+  const itemRef = useRef();
+
+  /**
+   * Use when cursor go through Bento Card
+   */
+  const handleMouseMove = (e) => {
+    if (!itemRef.current) return;
+    const { left, top, width, height } =
+      itemRef.current.getBoundingClientRect();
+    const relativeX = (e.clientX - left) / width;
+    const relativeY = (e.clientY - top) / height;
+
+    const tiltX = (relativeX - 0.5) * 50;
+    const tiltY = (relativeY - 0.5) * -50;
+
+    const newTransform = `perspective(700px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) scale3d(0.95, 0.95, 0.95)`;
+
+    setTransformStyle(newTransform);
+  };
+
+  const handleMouseLeave = () => {
+    setTransformStyle('');
+  };
+
+  return (
+    <div
+      ref={itemRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className={className}
+      style={{ transform: transformStyle }}
+    >
+      {children}
+    </div>
+  );
 };
 
 // Private Components, because just this file need
